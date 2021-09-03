@@ -5,7 +5,7 @@ function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const PortalGraphQuery = (haunt: number, status: String, order: String, last_id: String) => {
+const PortalGraphQuery = (haunt: number, status: String, last_id: String) => {
     let query = `{
       portals(
         first: 1000,
@@ -26,8 +26,8 @@ const PortalGraphQuery = (haunt: number, status: String, order: String, last_id:
   
     return query;
   }
-  
-export const retrieveOpenPortals = async (hauntid: number) => {
+
+export const retrievePortals = async (hauntid: number, status: String) => {
   let portals = [];
   let morePortals = true;
   let last_id: String = "";
@@ -36,39 +36,12 @@ export const retrieveOpenPortals = async (hauntid: number) => {
     const p = await axios.post(
       'https://api.thegraph.com/subgraphs/name/aavegotchi/aavegotchi-core-matic',
       {
-        query: PortalGraphQuery(hauntid, "Opened", "first", last_id)
+        query: PortalGraphQuery(hauntid, status, last_id)
       }
     );
-
     if (p.data.data.portals.length > 0) {
       portals.push(...p.data.data.portals);
       last_id = portals[portals.length - 1].id;
-      console.log(last_id);
-    } else {
-      morePortals = false;
-    }
-  }
-
-  return portals;
-};
-
-export const retrieveClaimedPortals = async (hauntid: number) => {
-  let portals = [];
-  let morePortals = true;
-  let last_id: String = "";
-  for (let i = 0; i < 10 && morePortals; i++) {
-    
-    const p = await axios.post(
-      'https://api.thegraph.com/subgraphs/name/aavegotchi/aavegotchi-core-matic',
-      {
-        query: PortalGraphQuery(hauntid, "Claimed", "first", last_id)
-      }
-    );
-
-    if (p.data.data.portals.length > 0) {
-      portals.push(...p.data.data.portals);
-      last_id = p.data.data.portals[p.data.data.portals.length - 1].id;
-      console.log(last_id);
     } else {
       morePortals = false;
     }
@@ -83,15 +56,15 @@ async function main() {
   const h2stream = fs.createWriteStream('./haunt2portals.csv');
   h1stream.write("t1,t2,t3,t4,t5,t6,brs\n");
   h2stream.write("t1,t2,t3,t4,t5,t6,brs\n");
-  
-  let h1portals = await retrieveOpenPortals(1);
-  let h1portalsClaimed = await retrieveClaimedPortals(1);
+
+  let h1portals = await retrievePortals(1, "Opened");
+  let h1portalsClaimed = await retrievePortals(1, "Claimed");
   console.log(h1portals.length);
   console.log(h1portalsClaimed.length);
   h1portals = h1portals.concat(h1portalsClaimed);
 
-  let h2portals = await retrieveOpenPortals(2);
-  let h2portalsClaimed = await retrieveClaimedPortals(2);
+  let h2portals = await retrievePortals(2, "Opened");
+  let h2portalsClaimed = await retrievePortals(2, "Claimed");
   console.log(h2portals.length);
   console.log(h2portalsClaimed.length);
   h2portals = h2portals.concat(h2portalsClaimed);
