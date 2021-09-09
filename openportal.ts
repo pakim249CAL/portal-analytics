@@ -54,8 +54,10 @@ export const retrievePortals = async (hauntid: number, status: String) => {
 async function main() {
   const h1stream = fs.createWriteStream('./haunt1portals.csv');
   const h2stream = fs.createWriteStream('./haunt2portals.csv');
+  const totalstream = fs.createWriteStream('./portals.csv');
   h1stream.write("t1,t2,t3,t4,t5,t6,brs\n");
   h2stream.write("t1,t2,t3,t4,t5,t6,brs\n");
+  totalstream.write("t1,t2,t3,t4,t5,t6,brs,haunt\n");
 
   let h1portals = await retrievePortals(1, "Opened");
   let h1portalsClaimed = await retrievePortals(1, "Claimed");
@@ -74,8 +76,10 @@ async function main() {
     for(let j = 0; j < 10; j++) {
       for(let k = 0; k < 6; k++) {
         h1stream.write(String(h1portals[i].options[j].numericTraits[k]) + ',');
+        totalstream.write(String(h1portals[i].options[j].numericTraits[k]) + ',');
       }
       h1stream.write(String(h1portals[i].options[j].baseRarityScore) + '\n');
+      totalstream.write(String(h1portals[i].options[j].baseRarityScore) + ',1\n');
     }
   }
 
@@ -83,12 +87,15 @@ async function main() {
     for(let j = 0; j < 10; j++) {
       for(let k = 0; k < 6; k++) {
         h2stream.write(String(h2portals[i].options[j].numericTraits[k]) + ',');
+        totalstream.write(String(h2portals[i].options[j].numericTraits[k]) + ',');
       }
       h2stream.write(String(h2portals[i].options[j].baseRarityScore) + '\n');
+      totalstream.write(String(h2portals[i].options[j].baseRarityScore) + ',2\n');
     }
   }
   h1stream.end();
   h2stream.end();
+  totalstream.end();
   await delay(3000);
 }
 
